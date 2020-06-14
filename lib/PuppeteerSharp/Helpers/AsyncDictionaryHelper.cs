@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
@@ -35,14 +35,16 @@ namespace PuppeteerSharp.Helpers
         internal async Task<TValue> TryGetItemAsync(TKey key)
         {
             var tcs = new TaskCompletionSource<TValue>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _pendingRequests.Add(key, tcs);
 
-            if (_dictionary.TryGetValue(key, out var item))
+            if (key != null)
             {
-                _pendingRequests.Delete(key, tcs);
-                return item;
+                _pendingRequests.Add(key, tcs);
+                if (_dictionary.TryGetValue(key, out var item))
+                {
+                    _pendingRequests.Delete(key, tcs);
+                    return item;
+                }
             }
-
             return await tcs.Task.WithTimeout(() => { }, 1000).ConfigureAwait(false);
         }
 
